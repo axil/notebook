@@ -1776,6 +1776,11 @@ define([
      * @param {Array} indices - the numeric indices of the cells to be merged
      * @param {boolean} into_last - merge into the last cell instead of the first
      */
+    function my_pad(z){
+        if(z.search(/^\s*def/) == 0)
+            z = z.replace(/\s*def/, '\ndef');
+        return z
+    }
     Notebook.prototype.merge_cells = function(indices, into_last) {
         if (indices.length <= 1) {
             return;
@@ -1796,22 +1801,23 @@ define([
 
         // Get all the cells' contents
         var contents = [];
+        var z;
         for (i=0; i < indices.length; i++) {
-            contents.push(this.get_cell(indices[i]).get_text());
+            contents.push(my_pad(this.get_cell(indices[i]).get_text()));
         }
         if (into_last) {
-            contents.push(target.get_text());
+            contents.push(my_pad(target.get_text()));
         } else {
-            contents.unshift(target.get_text());
+            contents.unshift(my_pad(target.get_text()));
         }
 
         // Update the contents of the target cell
         if (target instanceof codecell.CodeCell) {
-            target.set_text(contents.join('\n\n'));
+            target.set_text(contents.join('\n'));
         } else {
             var was_rendered = target.rendered;
             target.unrender(); // Must unrender before we set_text.
-            target.set_text(contents.join('\n\n'));
+            target.set_text(contents.join('\n'));
             if (was_rendered) {
                 // The rendered state of the final cell should match
                 // that of the original selected cell;
